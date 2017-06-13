@@ -45,6 +45,11 @@ moveRelative = (shape, relativeTo) ->
 #toggled - which subsets that are included, starting with universe,
 #followed by smaller and smaller intersection ex, 2 sets: U, A, B, AB
 #labels - Names of the sets
+#
+#EXAMPLES OF DRAWINGS
+#drawSets(3, [true, false, false, false, true, true, true, false], ["A", "B", "C"])
+#drawSets(2, [true, false, true, false,], ["A", "B"])
+#drawSets(1, [true, false], ["A"])
 drawSets = (setC, toggled, labels) ->
     setGroup.clear()
 
@@ -121,7 +126,3 @@ recieveMsg = (message) ->
     drawSets(message.setC, message.toggled, message.labels)
 
 stage.on("message:draw", recieveMsg)
-
-#drawSets(3, [true, false, false, false, true, true, true, false], ["A", "B", "C"])
-#drawSets(2, [true, false, true, false,], ["A", "B"])
-#drawSets(1, [true, false], ["A"])
