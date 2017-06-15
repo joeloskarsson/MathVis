@@ -11,6 +11,7 @@ SET_RADIUS = 200
 CENTER_OFFSET = 120 #distance from center of stage to center of circles
 TEXT_OFFSET = 200 #same as CENTER_OFFSET, but for text
 TEXT_UP_OFFSET = 10
+ANGLE_OFFSET = Math.PI
 
 TEXT_ATTR = {
   fontFamily: 'Arial, sans-serif',
@@ -53,9 +54,15 @@ moveRelative = (shape, relativeTo) ->
 drawSets = (setC, toggled, labels) ->
     setGroup.clear()
 
+    #Paint background (do first if no sets)
+    stage.setBackgroundColor(if toggled[0] then ON_COLOR else OFF_COLOR)
+
+    if setC is 0
+        return
+
     angles = []
     for i in [0..(setC - 1)]
-        angles.push((2*Math.PI/setC) * i)
+        angles.push(((2*Math.PI/setC) * i) + ANGLE_OFFSET)
 
     setCenters = []
     for angle in angles
@@ -93,9 +100,6 @@ drawSets = (setC, toggled, labels) ->
 
         cSet.attr("clip", clipSet)
         sets.push(cSet)
-
-    #Paint background
-    stage.setBackgroundColor(if toggled[0] then ON_COLOR else OFF_COLOR)
 
     #Paint sets
     for set, i in sets

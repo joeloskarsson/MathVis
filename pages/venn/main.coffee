@@ -11,6 +11,9 @@ movie = bonsai.setup({
     height: 700
 })
 
+#default focus to field
+formula_field.focus()
+
 #Show error symbol in formula formula field
 showError = (show) ->
     error_sign.css("visibility", (if show then "visible" else "hidden"))
@@ -44,7 +47,7 @@ FULL_SETS = [
 ACCEPTED_SETS = ["A", "B", "C"]
 
 #*,(,) and special unicode chats
-ACCEPTED_OPS = ["*", "\u2206", "\u2216", "\u22c3", "\u22c2", "(", ")"]
+ACCEPTED_OPS = ["*", "\u2206", "\u2216", "\u22c3", "\u22c2", "(", ")", "U"]
 
 getSetNames = (formula) ->
     setNames = []
@@ -59,15 +62,18 @@ getSetNames = (formula) ->
     setNames.sort()
     return setNames
 
+universe = (setC) ->
+    return (true for i in [1..(Math.pow(2,setC))])
+
 #
 # Set operations
 #
 inverse = (s) ->
-    return [not e for e in s]
+    return (not e for e in s)
 
 #Help operation to execute set operation (op) on arrays of subsets
 setOperation = (s1, s2, op) ->
-    return [op(s1[i], s2[i]) for i in [0..(s1.length-1)]]
+    return (op(s1[i], s2[i]) for i in [0..(s1.length-1)])
 
 union = (e1, e2) ->
     return e1 or e2
@@ -103,7 +109,7 @@ calculateSets = (exprArray) ->
 #Transforms string formula to an array of only sets and operators
 makeExprArray = (formula, labels) ->
     if formula is ""
-        throw formulaError
+        throw "formulaError"
 
     exprArray = []
 
@@ -112,16 +118,16 @@ makeExprArray = (formula, labels) ->
 
     inv = false
 
-    for c in formula
+    for c in formula.toUpperCase()
         if pars > 0
             if c is "("
                 pars++
                 inPars = inPars+c
-            if c is ")"
+            else if c is ")"
                 pars--
                 if pars is 0
                     #end parenthesis section
-                    innerExpr = makeExprArray(inPars)
+                    innerExpr = makeExprArray(inPars, labels)
                     innerSet = calculateSets(innerExpr)
                     inPars = ""
 
@@ -135,10 +141,18 @@ makeExprArray = (formula, labels) ->
             else
                 inPars = inPars+c
 
-        if c is "("
+        else if c is "("
             pars = 1
         else if c is ")"
             throw "formulaError"
+        else if c is "U"
+            uniSet = universe(labels.length)
+
+            if inv
+                exprArray.push(inverse(uniSet))
+                inv = false
+            else
+                exprArray.push(uniSet)
         else if c in ACCEPTED_OPS
             #Is operation
             #Check so no not before
@@ -149,7 +163,7 @@ makeExprArray = (formula, labels) ->
                 inv = true
             else
                 exprArray.push(c)
-        else if c.toUpperCase() in labels
+        else if c in labels
             setN = labels.indexOf(c)
             setC = labels.length
 
@@ -163,18 +177,15 @@ makeExprArray = (formula, labels) ->
     if inv or (pars > 0) or (exprArray.length%2 is 0)
         throw "formulaError"
 
-    console.log(exprArray)
-
     #check so no double operator or sets
     for val, i in exprArray
         if (i % 2) is 0
             #even
             if typeof val is "string"
                 throw "formulaError"
-        else if typeof val isnt "string"
-            console.log("wut?")
-            throw formulaError
 
+        else if typeof val isnt "string"
+            throw "formulaError"
 
     return exprArray
 
@@ -188,16 +199,15 @@ evalFormula = (formula) ->
     if not labels
         showError(true)
         return
+
     try
         exprArray = makeExprArray(formula, labels)
         drawSet = calculateSets(exprArray)
-
         showError(false)
 
         #send draw message
         messageDraw(drawSet, labels)
-        console.log("msg sent")
-    catch formulaError
+    catch
         showError(true)
 
 
