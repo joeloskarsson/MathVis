@@ -37,3 +37,27 @@ p{
     font-size: 15px;
     margin: 7px 0px;
 }
+
+/*Popup menus for nodes and edges*/
+ .option_menu{
+    position: absolute;
+
+    left: 0px;
+    top: 0px;
+    width: 150px;
+
+    display: none;
+ }
+ .option{
+    display: block;
+    padding: 5px;
+    font-size: 24px;
+    cursor: default;
+
+    color: #404040;
+    background-color: #808080;
+ }
+
+ .option:hover{
+     background-color: #DDDDDD;
+ }
