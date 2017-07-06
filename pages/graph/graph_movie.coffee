@@ -59,16 +59,27 @@ class Edge
 nodes = []
 edges = []
 
-selected = null
+selected = null #Selected shape
 bg = new Rect(0, 0, stage.width, stage.height)
 bg.fill(BG_COLOR)
 
 isDragging = false
+menuOpen = false
+
+#Creating edges
+makingEdge = false
+newPath = null
+newEdgeStart = null
+makingEdgeX = 0 #End position to draw of new edge
+makingEdgeY = 0
 
 #
 # User Interaction
 #
 dragNode = (e, node) ->
+    closeMenu()
+    hoverShape(node.shape)
+
     node.setPos(e.x, e.y)
 
     for edge in node.edges
@@ -77,8 +88,13 @@ dragNode = (e, node) ->
     isDragging = true
 
 hoverShape = (shape) ->
-    if isDragging
+    if isDragging or menuOpen
         return
+
+    if makingEdge and shape.node?
+        makingEdgeX = shape.node.x
+        makingEdgeY = shape.node.y
+        updateStage()
 
     if selected isnt null
         selected.stroke(STROKE_COLOR, EDGE_THICKNESS)
@@ -87,24 +103,67 @@ hoverShape = (shape) ->
     selected.stroke(HOVER_COLOR, EDGE_THICKNESS)
 
 resetHover = () ->
-    if isDragging
+    if isDragging or menuOpen
         return
 
     if selected isnt null
         selected.stroke(STROKE_COLOR,  EDGE_THICKNESS)
 
-clickNode = (e) ->
+clickNode = (e, shape) ->
+    if makingEdge
+        makingEdge = false;
+        makeEdge(newEdgeStart, shape.node)
+        updateStage()
+        updateProperties()
+        return
+
     if isDragging
         isDragging = false
         return
 
-    sendMessage("showNodeOptions", {
-        "x": e.x,
-        "y": e.y
-        })
+    if menuOpen
+        closeMenu()
+        hoverShape(shape)
+
+    showNodeMenu(e.x, e.y)
+
 
 clickEdge = (edge) ->
+    menuOpen = true
     console.log("edge menu")
+
+showNodeMenu = (x, y) ->
+    menuOpen = true
+    sendMessage("showNodeOptions", {
+        "x": x,
+        "y": y
+        })
+
+closeMenu = () ->
+    sendMessage("hideOptions", [])
+    menuOpen = false
+
+#
+# Event handling for stage
+#
+bg.on("click", (e) ->
+    if menuOpen
+        closeMenu()
+        resetHover()
+    else
+        makeNode(e.x, e.y)
+        updateStage()
+        updateProperties()
+)
+bg.on("pointermove", (e) ->
+    resetHover()
+
+    if makingEdge
+        makingEdgeX = e.x
+        makingEdgeY = e.y
+        updateStage()
+)
+
 
 #
 # Message passing to DOM
@@ -122,6 +181,8 @@ recMessage = (msg) ->
     switch action
         when "removeNode"
             removeNode(selected)
+        when "makeEdge"
+            startMakingEdge()
 
 
 stage.on("message:action", recMessage)
@@ -152,7 +213,7 @@ makeNode = (x, y) ->
     )
 
     newCir.on("click", (e) ->
-        clickNode(e)
+        clickNode(e,  newCir)
     )
 
     nodes.push(newNode)
@@ -182,7 +243,7 @@ removeNode = (n) ->
     remNode.clearEdges()
     nodes.splice(nodes.indexOf(remNode), 1)
 
-    sendMessage("hideOptions", [])
+    closeMenu()
     updateProperties()
     updateStage()
 
@@ -193,21 +254,30 @@ updateStage = () ->
     for e in edges
         e.path.addTo(stage)
 
+    #Draw edge in the makingEdge
+    if makingEdge
+        newPath.clear()
+        newPath.moveTo(newEdgeStart.x, newEdgeStart.y)
+        newPath.lineTo(makingEdgeX, makingEdgeY)
+        newPath.closePath()
+        newPath.addTo(stage)
+
     for n in nodes
         n.shape.addTo(stage)
 
-#
-# Event handling for stage
-#
-bg.on("click", (e) ->
-    makeNode(e.x, e.y)
-    sendMessage("hideOptions", [])
-    updateStage()
-    updateProperties()
-)
-bg.on("pointermove", (e) ->
-    resetHover()
-)
+startMakingEdge = () ->
+    closeMenu()
+
+    makingEdge = true
+    newEdgeStart = selected.node
+    newPath = new Path()
+    newPath.stroke("black", EDGE_THICKNESS)
+
+    newPath.on("click", () ->
+        makingEdge = false
+        updateStage()
+    )
+
 
 # Start Example
 n1 = makeNode(200, 300)

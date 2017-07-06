@@ -37,9 +37,12 @@ sendMessage = (action, data = 0) ->
         action: action,
         data: data
     })
-
+# Menu option clicked
 $("#rem_node").click(() ->
     sendMessage("removeNode")
+)
+$("#new_edge").click(() ->
+    sendMessage("makeEdge")
 )
 
 #Recieve messages from movie
