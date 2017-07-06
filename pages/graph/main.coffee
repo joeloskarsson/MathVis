@@ -23,11 +23,15 @@ closeOptions = () ->
     edge_options.css("display", "none")
 
 showEdgeOption = (x,y) ->
+    node_options.css("display", "none")
 
+    edge_options.css("display", "block")
+    edge_options.css("top", y)
+    edge_options.css("left", x)
 
 setVerticeC = (vertC) ->
-    $("#vertice_c").text(vertC)
 
+    $("#vertice_c").text(vertC)
 setEdgeC = (edgeC) ->
     $("#edge_c").html(edgeC)
 
@@ -37,12 +41,16 @@ sendMessage = (action, data = 0) ->
         action: action,
         data: data
     })
+
 # Menu option clicked
 $("#rem_node").click(() ->
     sendMessage("removeNode")
 )
 $("#new_edge").click(() ->
     sendMessage("makeEdge")
+)
+$("#rem_edge").click(() ->
+    sendMessage("removeEdge")
 )
 
 #Recieve messages from movie
@@ -57,6 +65,8 @@ recMessage = (msg) ->
             setEdgeC(data)
         when "showNodeOptions"
             showNodeOption(data.x, data.y)
+        when "showEdgeOptions"
+            showEdgeOption(data.x, data.y)
         when "hideOptions"
             closeOptions()
 

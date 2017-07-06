@@ -127,10 +127,15 @@ clickNode = (e, shape) ->
 
     showNodeMenu(e.x, e.y)
 
+clickEdge = (edge, e) ->
+    closeMenu()
+    hoverShape(edge.path)
 
-clickEdge = (edge) ->
     menuOpen = true
-    console.log("edge menu")
+    sendMessage("showEdgeOptions", {
+        "x": e.x,
+        "y": e.y
+        })
 
 showNodeMenu = (x, y) ->
     menuOpen = true
@@ -180,9 +185,11 @@ recMessage = (msg) ->
 
     switch action
         when "removeNode"
-            removeNode(selected)
+            removeNode(selected.node)
         when "makeEdge"
             startMakingEdge()
+        when "removeEdge"
+            removeEdge(selected.edge)
 
 
 stage.on("message:action", recMessage)
@@ -230,22 +237,27 @@ makeEdge = (n1, n2) ->
     path.on("pointermove", (e) ->
         hoverShape(path)
     )
-
     path.on("click", (e) ->
-        clickNode(newEdge)
+        clickEdge(newEdge, e)
     )
+    path.edge = newEdge
 
     edges.push(newEdge)
     return newEdge
 
-removeNode = (n) ->
-    remNode = n.node
+removeNode = (remNode) ->
     remNode.clearEdges()
     nodes.splice(nodes.indexOf(remNode), 1)
 
     closeMenu()
     updateProperties()
     updateStage()
+
+removeEdge = (remEdge) ->
+    remEdge.deleteEdge()
+    updateStage()
+    closeMenu()
+
 
 updateStage = () ->
     stage.clear()
@@ -275,6 +287,12 @@ startMakingEdge = () ->
 
     newPath.on("click", () ->
         makingEdge = false
+        updateStage()
+    )
+
+    newPath.on("pointermove", (e) ->
+        makingEdgeX = e.x
+        makingEdgeY = e.y
         updateStage()
     )
 
