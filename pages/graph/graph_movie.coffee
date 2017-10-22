@@ -255,6 +255,7 @@ removeNode = (remNode) ->
 
 removeEdge = (remEdge) ->
     remEdge.deleteEdge()
+    updateProperties()
     updateStage()
     closeMenu()
 
