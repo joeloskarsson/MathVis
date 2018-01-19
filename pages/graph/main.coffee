@@ -30,10 +30,13 @@ showEdgeOption = (x,y) ->
     edge_options.css("left", x)
 
 setVerticeC = (vertC) ->
-
     $("#vertice_c").text(vertC)
+
 setEdgeC = (edgeC) ->
     $("#edge_c").html(edgeC)
+
+setTotalCost = (totCost) ->
+    $("#total_cost").html(totCost)
 
 #Send message to movie
 sendMessage = (action, data = 0) ->
@@ -52,6 +55,15 @@ $("#new_edge").click(() ->
 $("#rem_edge").click(() ->
     sendMessage("removeEdge")
 )
+$("#set_weight").click(() ->
+    #Ask user for Weight
+    newWeight = prompt("Set weight")
+
+    if isNaN(newWeight)
+        alert("Not a number!")
+    else
+        sendMessage("setWeight", parseFloat(newWeight))
+)
 
 #Recieve messages from movie
 recMessage = (msg) ->
@@ -63,6 +75,8 @@ recMessage = (msg) ->
             setVerticeC(data)
         when "updateEdgeC"
             setEdgeC(data)
+        when "setTotalCost"
+            setTotalCost(data)
         when "showNodeOptions"
             showNodeOption(data.x, data.y)
         when "showEdgeOptions"

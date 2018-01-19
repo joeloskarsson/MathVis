@@ -8,6 +8,8 @@ STROKE_COLOR = "black"
 HOVER_COLOR = "#C3C3C3"
 BG_COLOR = "white"
 
+WEIGHT_OFFSET = 20
+
 class Node
     constructor: (@shape) ->
         @x = @shape.attr("x")
@@ -41,19 +43,41 @@ class Edge
         @n1.edges.push(this)
         @n2.edges.push(this)
 
-        @weight = 0
+        @weight = 0.0
+        @text = new Text()
 
     updateEdge: () ->
         @path.clear()
         @path.moveTo(@n1.x, @n1.y)
         @path.lineTo(@n2.x, @n2.y)
         @path.closePath()
+        @updateWeight()
+
+    updateWeight:  () ->
+        dx = (@n2.x - @n1.x)
+        dy = (@n2.y - @n1.y)
+
+        xOffset = 0
+        yOffset = 0
+
+        if Math.abs(dy) > Math.abs(dx)
+            xOffset = WEIGHT_OFFSET
+        else
+            yOffset = WEIGHT_OFFSET
+
+        @text.attr("text", @weight)
+        @text.attr("x", @n1.x + dx/2 + xOffset)
+        @text.attr("y", @n1.y + dy/2 + yOffset)
 
     deleteEdge: () ->
         @n1.removeEdge(this)
         @n2.removeEdge(this)
 
         edges.splice(edges.indexOf(this), 1)
+
+    setWeight: (newWeight) ->
+        @weight = newWeight
+        @updateWeight()
 
 #Parts of graph, State of movie
 nodes = []
@@ -190,7 +214,8 @@ recMessage = (msg) ->
             startMakingEdge()
         when "removeEdge"
             removeEdge(selected.edge)
-
+        when "setWeight"
+            setEdgeWeight(selected.edge, data)
 
 stage.on("message:action", recMessage)
 
@@ -198,8 +223,12 @@ updateProperties = () ->
     vertC = nodes.length
     edgeC = edges.length
 
+    costTotal = edges.map((e) -> e.weight).reduce((x,y) -> x + y)
+
+    #TODO send one message with all property information
     sendMessage("updateVerticeC", vertC)
     sendMessage("updateEdgeC", edgeC)
+    sendMessage("setTotalCost", costTotal)
 
 #
 # Add elelments
@@ -259,6 +288,11 @@ removeEdge = (remEdge) ->
     updateStage()
     closeMenu()
 
+setEdgeWeight = (edge, weight) ->
+    selected.edge.setWeight(weight)
+    closeMenu()
+    updateProperties()
+    updateStage()
 
 updateStage = () ->
     stage.clear()
@@ -266,6 +300,10 @@ updateStage = () ->
     bg.addTo(stage)
     for e in edges
         e.path.addTo(stage)
+
+        #Draw weights for each Path
+        if e.weight > 0
+            e.text.addTo(stage)
 
     #Draw edge in the makingEdge
     if makingEdge
@@ -296,7 +334,6 @@ startMakingEdge = () ->
         makingEdgeY = e.y
         updateStage()
     )
-
 
 # Start Example
 n1 = makeNode(200, 300)
