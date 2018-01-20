@@ -1,6 +1,6 @@
 #Graph interface using BonsaiJS
 
-NODE_RADIUS = 40;
+NODE_RADIUS = 30;
 EDGE_THICKNESS = 7;
 
 NODE_COLOR = "#9A9A9A"
@@ -216,19 +216,28 @@ recMessage = (msg) ->
             removeEdge(selected.edge)
         when "setWeight"
             setEdgeWeight(selected.edge, data)
+        when "clearGraph"
+            clearGraph()
 
 stage.on("message:action", recMessage)
 
 updateProperties = () ->
-    vertC = nodes.length
+    nodeC = nodes.length
     edgeC = edges.length
 
-    costTotal = edges.map((e) -> e.weight).reduce((x,y) -> x + y)
+    costTotal = 0
+    if edgeC > 0
+        costTotal = edges.map((e) -> e.weight).reduce((x,y) -> x + y)
 
     #TODO send one message with all property information
-    sendMessage("updateVerticeC", vertC)
+    ###sendMessage("updateVerticeC", {vertC})
     sendMessage("updateEdgeC", edgeC)
-    sendMessage("setTotalCost", costTotal)
+    sendMessage("setTotalCost", costTotal)###
+    sendMessage("updateProperties", {
+        "nodeC": nodeC,
+        "edgeC": edgeC,
+        "costTot": costTotal
+        })
 
 #
 # Add elelments
@@ -287,6 +296,12 @@ removeEdge = (remEdge) ->
     updateProperties()
     updateStage()
     closeMenu()
+
+clearGraph = () ->
+    nodes = []
+    edges = []
+    updateStage()
+    updateProperties()
 
 setEdgeWeight = (edge, weight) ->
     selected.edge.setWeight(weight)

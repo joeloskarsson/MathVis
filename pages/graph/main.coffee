@@ -29,6 +29,11 @@ showEdgeOption = (x,y) ->
     edge_options.css("top", y)
     edge_options.css("left", x)
 
+setProperties= (props) ->
+    $("#vertice_c").text(props["nodeC"])
+    $("#edge_c").html(props["edgeC"])
+    $("#total_cost").html(props["costTot"])
+
 setVerticeC = (vertC) ->
     $("#vertice_c").text(vertC)
 
@@ -65,18 +70,19 @@ $("#set_weight").click(() ->
         sendMessage("setWeight", parseFloat(newWeight))
 )
 
+#Side menu buttons
+$("#clear_btn").click(() ->
+    sendMessage("clearGraph")
+)
+
 #Recieve messages from movie
 recMessage = (msg) ->
     action = msg.action
     data = msg.data
 
     switch action
-        when "updateVerticeC"
-            setVerticeC(data)
-        when "updateEdgeC"
-            setEdgeC(data)
-        when "setTotalCost"
-            setTotalCost(data)
+        when "updateProperties"
+            setProperties(data)
         when "showNodeOptions"
             showNodeOption(data.x, data.y)
         when "showEdgeOptions"
