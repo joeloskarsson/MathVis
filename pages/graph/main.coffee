@@ -29,19 +29,13 @@ showEdgeOption = (x,y) ->
     edge_options.css("top", y)
     edge_options.css("left", x)
 
-setProperties= (props) ->
+setProperties = (props) ->
     $("#vertice_c").text(props["nodeC"])
     $("#edge_c").html(props["edgeC"])
     $("#total_cost").html(props["costTot"])
 
-setVerticeC = (vertC) ->
-    $("#vertice_c").text(vertC)
-
-setEdgeC = (edgeC) ->
-    $("#edge_c").html(edgeC)
-
-setTotalCost = (totCost) ->
-    $("#total_cost").html(totCost)
+showPathResult = (cost) ->
+    $("#path_length").html(cost)
 
 #Send message to movie
 sendMessage = (action, data = 0) ->
@@ -67,12 +61,20 @@ $("#set_weight").click(() ->
     if isNaN(newWeight)
         alert("Not a number!")
     else
-        sendMessage("setWeight", parseFloat(newWeight))
+        weightNumber = parseFloat(newWeight)
+
+        if weightNumber < 0
+            alert("Weight must be positive!")
+        else
+            sendMessage("setWeight", weightNumber)
 )
 
 #Side menu buttons
 $("#clear_btn").click(() ->
     sendMessage("clearGraph")
+)
+$("#dijkstra").click(() ->
+    sendMessage("startDijkstra")
 )
 
 #Recieve messages from movie
@@ -89,5 +91,7 @@ recMessage = (msg) ->
             showEdgeOption(data.x, data.y)
         when "hideOptions"
             closeOptions()
+        when "dijkstraDone"
+            showPathResult(data)
 
 movie.on("message:action", recMessage)

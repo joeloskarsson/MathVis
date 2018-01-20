@@ -12,23 +12,23 @@ body{
 #interaction{
     position: fixed;
     right: 20px;
-    top:20px;
+    top:10px;
+}
 
+.int_section{
     width: 200px;
     padding: 7px;
     box-shadow: 3px 3px 2px #888888;
 
     border: 2px solid #454545;
     background-color: #F3F3F3;
-}
 
-.int_section{
-
+    margin-top: 7px;
 }
 
 /*Headers for interaction menu*/
 h3{
-    font-size: 20px;
+    font-size: 15px;
     margin: 0px;
 }
 
