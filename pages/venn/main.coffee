@@ -236,3 +236,6 @@ buttons_elem.click(() ->
     #reevaluate
     evalutateField()
 )
+
+#Run at pageload
+evalutateField()
