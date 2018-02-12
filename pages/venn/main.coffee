@@ -91,6 +91,9 @@ relComp = (e1, e2) ->
 calculateSets = (exprArray) ->
     curSet = exprArray[0]
 
+    if exprArray.length is 1
+        return curSet
+
     for i in [1..(exprArray.length-1)] by 2
         switch exprArray[i]
             when "\u2206"
