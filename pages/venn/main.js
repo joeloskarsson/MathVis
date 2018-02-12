@@ -126,6 +126,9 @@
   calculateSets = function(exprArray) {
     var curSet, i, j, op, ref;
     curSet = exprArray[0];
+    if (exprArray.length === 1) {
+      return curSet;
+    }
     for (i = j = 1, ref = exprArray.length - 1; 2 !== 0 && (1 <= ref ? 1 <= j && j <= ref : 1 >= j && j >= ref); i = j += 2) {
       switch (exprArray[i]) {
         case "\u2206":
